@@ -1,0 +1,28 @@
+Package: SNVsMutations
+Type: Package
+Title: Determine the mutation types of SNVs stored in a VCF file
+Version: 0.1.0
+Date: 22/04/2023
+Authors@R: person("Federica", "Boselli", 
+    email = "federica.boselli@mail.polimi.it", 
+    role = c("aut", "cre"))
+Description: This is an R tool that analyzes a set of single nucleotide 
+    variants (SNVs) in a VCF file, along with the associated reference genome, 
+    and utilizes a parameter called "context_length" to identify and classify 
+    the mutation type for each individual mutation. The toolkit provides 
+    flexibility by allowing users to either provide a mutation file or calculate
+    mutation types directly from the provided data. The tool is also able to 
+    provide a graphical representation of the mutation counts for each specific 
+    mutation type. 
+License: GPL-3
+Depends: R(>= 4.2.0),VariantAnnotation, Biostrings, 
+    BSgenome.Hsapiens.UCSC.hg38, GenomicRanges
+Imports: S4Vectors, ggplot2, IRanges, MatrixGenerics, grDevices, stats
+Suggests: knitr, rmarkdown, testthat, BiocStyle
+biocViews: Software, VariantAnnotation, SNP, Coverage, SequenceMatching, 
+    DataImport, Sequencing, Alignment
+VignetteBuilder: knitr
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+NeedsCompilation: no

@@ -1,0 +1,123 @@
+---
+title: "SNVsMutations package to determine the mutation type and counts for a set of single nucleotide variants in a vcf file"
+author:
+- name: Federica Boselli
+  email: federica.boselli@mail.polimi.it
+package: SNVsMutations
+output:
+  BiocStyle::html_document
+abstract: |
+  This package takes:a set of mutations (single nucleotide variants, SNVs) in VCF format, the corresponding reference genome (e.g., human genome hg38) and a parameter “context_length” which is a positive, odd integer and determines for each mutation (only SNVs; other mutations like indels can be ignored) the corresponding mutation type. Lastly, the package can provide a graphical output which plots the summarized mutation type counts.
+
+vignette: |
+  %\VignetteIndexEntry{SNVsMutations R package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r style, echo=FALSE, message=FALSE}
+library(BiocStyle)
+library(knitr)
+```
+
+# Using the SNVsMUtations package to determine the mutation type for a set of single nucleotide variants in a genome
+
+## Background
+
+The **`SNVsMutations`** package is designed to analyze a set of single nucleotide variants (SNVs) in VCF format, along with the corresponding reference genome (e.g., human genome hg38), and the parameter "context_length." The goal of this package, developed for the Scientific Programming course at Politecnico of Milan as part of the Bioinformatics for Computational Genomics MSc program, is to determine the mutation types for each SNV and provide a graphical summary of the mutation type counts.
+
+To get started with the SNVsMutations package in R, follow this vignette for a guide on how to use it effectively.
+
+### SNVs (Single Nucleotide Variants)
+
+Single-nucleotide variant (SNV), also known as single-nucleotide polymorphism (SNP), is the variant of a single nucleotide that occurs at a specific genomic position.
+
+### VCF file
+
+VCF is a text file format (most likely stored in a compressed manner). It contains meta-information lines, a header line, and then data lines each containing information about a position in the genome. The format also has the ability to contain genotype information on samples for each position. From: <https://samtools.github.io/hts-specs/VCFv4.2.pdf>
+
+## Installation and dependencies
+
+This package depends from: VariantAnnotation, Biostrings, BSgenome.Hsapiens.UCSC.hg38, GenomicRanges. So to be able to install this package, these 4 packages must be installed.
+
+For example, to manually install a package from BiocManager: `BiocManager::install("Biostrings")`
+
+After that, `SNVsMutations` can be installed from the command line as follows: `R CMD install SNVsMutations.tar.gz`.
+
+To load the packages if they have been already installed:
+
+```{r loading packages, message=FALSE, warning=FALSE}
+library(BiocStyle)
+library(knitr)
+library(BSgenome.Hsapiens.UCSC.hg38)
+library(VariantAnnotation)
+library(GenomicRanges)
+library(ggplot2)
+library(SNVsMutations)
+```
+
+## Loading the VCF file
+
+To load the VCF file it is possible to load the vcf example file from the VariabtAnnotation package documentation. It can be found at: <https://bioconductor.org/packages/release/bioc/vignettes/VariantAnnotation/inst/doc/VariantAnnotation.pdf> For example:
+
+```{r Loading the example VCF file}
+fl <- system.file("extdata", "chr22.vcf.gz", package="VariantAnnotation")
+vcf <- readVcf(fl, "hg38")[1:200]
+```
+
+In alternative, it is possible to load another vcf file by specifying the path
+
+```{r Loading the VCF file}
+file <- ('/Users/federicaboselli/Downloads/HG02024_VN049_KHVTrio.chr1.vcf')
+vcf2 <- readVcf(file,"hg38")
+```
+
+In both cases the vcf file can be read by using the `readVcf`()\` function. In this case we selected only the first 200 rows to make analysis more easy, smooth and less computationally expensive.
+
+In this example vignette we will use chr22.vcf.gz
+
+## Getting the mutation types from the vcf file through the `SNV_Types()` function
+
+The `SNV_Types()` function takes a VCF file, a context length, and a reference genome as input. It processes only the single nucleotide variants (SNVs) present in the VCF file and returns a vector of characters representing the mutation types.
+
+Regarding the function inputs: - the vcf file is the one previously loaded by the user (see 'loading the vcf file') - the context_length parameter should be a positive odd integer. It specifies the number of bases to include both upstream and downstream of each single nucleotide variant (SNV) position in the mutation type string. - the reference genome should be in concordance with the used vcf file and can be loaded by using the BSgenome library. In particular, the BSgenome library should correspond to the reference genome.
+
+For example, to load the human reference genome hg38
+
+```{r Loading the reference genome}
+ref_genome <- Hsapiens
+```
+
+Overall, a possible example on how to use the function can be this one:
+
+```{r Mutation Types Example}
+mut_type <- SNV_Types(vcf, context_length = 3, ref_genome)   
+mut_type
+```
+
+NB: The mutation "C[G>A]A" corresponds to "T[C>T]G" when considering the reverse strand, indicating a redundancy that can be resolved by converting the mutation types identified for REF bases A and G to their corresponding reverse complements. Therefore, in this function all mutation types are reported with either C or T as the mutated REF base.
+
+## Generating the mutation counts and a final graphical output with the `SNV_Counts()` function
+
+The function `SNV_Counts()`t takes either a vector of mutation types (mutationstype_vector) or a VCF file, reference genome, and context length as inputs. It counts the occurrences of different mutation types and generates a plot to visualize the counts. If the onlySNV parameter is set to TRUE, it specifically counts single-nucleotide variant (SNV) mutation types.
+
+If a mutationstype_vector is provided, it is used directly to count the mutation types. Otherwise, the mutation types are computed using the MutationsType function based on the vcf_file, ref_genome, and context_length parameters. The function also creates a bar plot showing the mutation counts with different colors for each mutation type. The plot is displayed if plot is set to TRUE. In particular: If onlySNV is TRUE, the plot shows the mutation types by considering only reference and alternative allele (SNV only). If onlySNV is FALSE, the plot shows the mutation types by also considering the bases upstream and downstream (taking into account the 'context_length' variable) of each SNV.
+
+Example usage of the `SNV_Counts()` function using the mut_type object previously generated through the `SNV_Types()` function:
+
+```{r Mutation Counts Example}
+# plotting only the Single Nucleotide Variants
+SNV_Counts(mut_type, plot=TRUE, onlySNV=TRUE)
+```
+
+```{r Mutation Counts additional Example, warning=FALSE}
+# plotting the Single Nucleotide Variants with the context bases
+SNV_Counts(mut_type, plot=TRUE, onlySNV=FALSE)
+```
+
+
+## Session info {.unnumbered}
+
+```{r sessionInfo, echo=FALSE}
+sessionInfo()
+```
