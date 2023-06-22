@@ -1,3 +1,5 @@
+Scientific Programming, A.Y. 2022/2023 - M.Sc. Bioinformatics for computational genomics - Politecnico di Milano, Università degli Studi di Milano
+
 # SNVsMutations
 Bioconductor compliant R package that offers functions for identifying the category of single nucleotide variants (SNVs) contained within VCF files.
 
